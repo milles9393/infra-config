@@ -1,0 +1,43 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-configuration
+  namespace: infra-gitops
+spec:
+  generators:
+    - matrix:
+        generators:
+          - clusterDecisionResource:
+              configMapRef: acm-placement
+              labelSelector:
+                matchLabels:
+                  cluster.open-cluster-management.io/placement: global-application
+          - git:
+              repoURL: https://github.com/milles9393/gitops-ws.git
+              revision: master
+              directories:
+              - path: overlays/{{clusterName}}/*
+  template:
+    metadata:
+      labels:
+        type: cluster
+      name: '{{clusterName}}-{{path[2]}}'
+    spec:
+      project: acm
+      source:
+        repoURL: https://github.com/milles9393/gitops-ws.git
+        targetRevision: master
+        path: '{{path}}'
+      destination:
+        server: '{{server}}'
+      syncPolicy:
+        automated:
+          selfHeal: false
+          prune: false
+        syncOptions:
+        - ApplyOutOfSyncOnly=true
+  syncPolicy:
+    applicationsSync: create-update
+    preserveResourcesOnDeletion: true
+...

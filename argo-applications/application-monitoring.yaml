@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: openshift-gitops
+spec:
+  destination:
+    namespace: openshift-monitoring
+    server: 'https://kubernetes.default.svc'
+  project: default
+  source:
+    path: infra-config/overlay/bm/local-cluster/monitoring
+    repoURL: 'https://github.com/milles9393/gitops-ws.git'
+    targetRevision: HEAD
+  syncPolicy:
+    automated: {}
